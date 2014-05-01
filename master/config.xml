@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<slave_cluster>
+    <slave id="server1" ip="192.168.64.131" name="wkj_server"></slave>
+</slave_cluster>
