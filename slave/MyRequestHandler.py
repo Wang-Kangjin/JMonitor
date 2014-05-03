@@ -42,7 +42,7 @@ class MyRequestHandler(BaseRequestHandler):
         return mem_state.percent
 
     def get_time(self):
-        time_format = '%Y-%m-%d-%H-%M-%S'
+        time_format = '%Y-%m-%d %H-%M-%S'
         struct_time = time.localtime(time.time())
         time_stamp = time.strftime( time_format, struct_time)
         return time_stamp
