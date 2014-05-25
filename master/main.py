@@ -8,32 +8,49 @@ import MySQLdb as db
 global g_conn
 
 def main():
-    init()
-    while True:
+
+    try:
         dom = xml.parse("config.xml")
-        xml_config = dom.documentElement          #get "config" element
+        #get "config" element
+        xml_config = dom.documentElement
 
         for node in xml_config.childNodes:
+            #find "slave_cluster" node
             if node.nodeName == "slave_cluster":
                 xml_slave_cluster = node
+            if node.nodeName == "db_config":
+                xml_db_config = node
 
-        poll(xml_slave_cluster)
+        db_pwd = raw_input("Please type your DB password:")
+        db_user = xml_db_config.getAttribute("user")
+        db_name = xml_db_config.getAttribute("db_name")
+        init(db_user, db_pwd, db_name)
+        # request slave server
+        while True:
+            poll(xml_slave_cluster)
+            time.sleep(1)
+    except KeyboardInterrupt, e:
+        print "Exit! Bye~"
+        g_conn.close
 
-def init():
+
+def init(db_user, db_pwd, db_name):
     global g_conn
     # init mysql connection
-    g_conn = db.connect(host='localhost',user='root',passwd='wkj',db='jmonitor',port=3306,charset='utf8')
+    #g_conn = db.connect(host='localhost',user='root',passwd='wkj',db='jmonitor',port=3306,charset='utf8')
+    g_conn = db.connect(host='localhost',user=db_user,passwd=db_pwd,db=db_name,port=3306,charset='utf8')
 
 def poll(cluster):
     for node in cluster.childNodes:
         if node.nodeType == node.ELEMENT_NODE:
             print node.nodeName
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             try:
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 node_ip = node.getAttribute('ip')
                 node_id = int(node.getAttribute('id'))
                 node_name = node.getAttribute('name')
                 print node_name+":"+node_ip
+                #connect to a slave server
                 s.connect((node_ip, 2048))
                 s.send(str(node_id))
                 response_data = s.recv(1024)
@@ -42,9 +59,13 @@ def poll(cluster):
                 on_recv_response(response_data)
                 print response_data
                 s.close
+
             except socket.error, e:
-                print e.argv[0]+e.argv[1]
-                print "Warning!!!" + node_id + " is not availabel !"
+                s.close
+                print "Error Code:"+ str(e.args[0])+ " Detial:"+str(e.args[1])
+                print "Warning!!!" + str(node_id) + " is not availabel !"
+            print "==============================="
+
 def get_time():
     time_format = '%Y-%m-%d %H-%M-%S'
     struct_time = time.localtime(time.time())

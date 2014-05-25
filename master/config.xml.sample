@@ -3,4 +3,5 @@
     <slave_cluster>
         <slave id="1" ip="192.168.64.131" name="wkj_server"></slave>
     </slave_cluster>
+    <db_config user="root" db_name="jmonitor"></db_config>
 </config>

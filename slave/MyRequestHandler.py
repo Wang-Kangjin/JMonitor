@@ -2,18 +2,25 @@
 
 #coding=utf-8
 import psutil
-import time, json
+import time, json, os, statvfs
 from SocketServer import TCPServer, BaseRequestHandler
+import global_var as glb
 class MyRequestHandler(BaseRequestHandler):
+    def __init__(self, request, client_address, server):
+        BaseRequestHandler.__init__(self, request, client_address, server)
+
+
     def handle(self):
         data = self.request.recv(1024).strip()
         print data
         status_dict = {}
-        status_dict["local_time"]= time = self.get_time()
+        status_dict["local_time"] = self.get_time()
         status_dict["cpu_percent"] = str(self.get_cpu_percent())
         status_dict["mem_used"] = str(self.get_memory()) + '%'
         status_dict["send_speed"] = self.get_net_send_speed()
         status_dict["recv_speed"] = self.get_net_recv_speed()
+        status_dict["total_capacity"] = self.get_total_capacity()
+        status_dict["available_capacity"] = self.get_available_capacity()
         self.request.sendall(json.dumps(status_dict))
 
     def bytes2human(self, n):
@@ -48,15 +55,19 @@ class MyRequestHandler(BaseRequestHandler):
         return time_stamp
 
     def get_net_send_speed(self):
-        netcount_before = psutil.network_io_counters()
-        time.sleep(1)
-        netcount_after = psutil.network_io_counters()
-        send_speed = self.bytes2human(netcount_after.bytes_sent - netcount_before.bytes_sent)
+        send_speed = self.bytes2human(glb.network_send_speed)
         return send_speed + '/s'
 
     def get_net_recv_speed(self):
-        recv_before = psutil.network_io_counters()
-        time.sleep(1)
-        recv_after = psutil.network_io_counters()
-        recv_speed = self.bytes2human(recv_after.bytes_recv - recv_before.bytes_recv)
+        recv_speed = self.bytes2human(glb.network_recv_speed)
         return recv_speed + '/s'
+
+    def get_total_capacity(self):
+        vfs=os.statvfs("/")
+        capacity=vfs[statvfs.F_BLOCKS]*vfs[statvfs.F_BSIZE]
+        return self.bytes2human(capacity)
+
+    def get_available_capacity(self):
+        vfs=os.statvfs("/")
+        available=vfs[statvfs.F_BAVAIL]*vfs[statvfs.F_BSIZE]
+        return self.bytes2human(available)
