@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<!-- saved from url=(0042)http://v2.bootcss.com/examples/signin.html -->
+<html lang="en">
+  <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <title>detail</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    {% load staticfiles %}
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <script src="http://code.jquery.com/jquery.js"></script>
+    <script src="/static/js/Chart.js"></script>
+  </head>
+
+  <body>
+<script src="/static/js/bootstrap.min.js"></script>
+<div class="container-fluid">
+  <div class="row-fluid">
+    <div class="span12">
+      <ul class="nav nav-tabs">
+        <li class="active">
+          <a href="#">首页</a>
+        </li>
+        <li>
+          <a href="#">资料</a>
+        </li>
+        <li class="disabled">
+          <a href="#">信息</a>
+        </li>
+        <li class="dropdown pull-right">
+           <a href="#" data-toggle="dropdown" class="dropdown-toggle">下拉<strong class="caret"></strong></a>
+          <ul class="dropdown-menu">
+            <li>
+              <a href="#">操作</a>
+            </li>
+            <li>
+              <a href="#">设置栏目</a>
+            </li>
+            <li>
+              <a href="#">更多设置</a>
+            </li>
+            <li class="divider">
+            </li>
+            <li>
+              <a href="#">分割线</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+      <ul class="breadcrumb">
+        <li>
+          <a href="#">主页</a> <span class="divider">/</span>
+        </li>
+        <li>
+          <a href="#">集群</a> <span class="divider">/</span>
+        </li>
+        <li class="active">
+          主机1
+        </li>
+      </ul>
+    </div>
+  </div>
+  <div class="row-fluid">
+    <div class="span2">
+      <ul class="nav nav-list well">
+        <li class="nav-header">
+          性能统计
+        </li>
+        <li>
+          <a href="#cpu">cpu使用率</a>
+        </li>
+        <li>
+          <a href="#mem">内存占用率</a>
+        </li>
+        <li>
+          <a href="#netsend">网络带宽</a>
+        </li>
+        <li>
+          <a href="#disk">磁盘空间</a>
+        </li>
+
+        <li class="divider">
+        </li>
+      </ul>
+    </div>
+    <div class="span10">
+      <div class="page-header">
+        <h1>
+          <a id="cpu" name="cpu">cpu使用率</a>
+        </h1>
+      </div><canvas id="cpu_chart" height="150" width="1000"></canvas>
+
+      <div class="page-header">
+        <h1>
+          <a id="mem" name="mem">内存使用率</a>
+        </h1>
+      </div><canvas id="mem_chart" height="150" width="1000"></canvas>
+
+      <div class="page-header">
+        <h1>
+          <a id="netsend" name="netsend">Net Send Speed</a>
+        </h1>
+      </div><canvas id="net_send_chart" height="150" width="1000"></canvas>
+
+      <div class="page-header">
+        <h1>
+          <a id="netrecv" name="netrecv">Net Recieve Speed</a>
+        </h1>
+      </div><canvas id="net_recv_chart" height="150" width="1000"></canvas>
+
+      <div class="page-header">
+        <h1>
+          <a id="disk" name="disk">Disk Used</a>
+        </h1>
+      </div>
+
+      <div class="row-fluid">
+        <div class="span3">
+          <canvas id="disk_chart" height="200" width="200" style="width: 200px; height: 200px;"></canvas>
+        </div>
+        <div class="span9">
+          <table class="table">
+            <tbody>
+              <tr>
+                <td style="background:#E0E4CC">Used</td><td>{{used_disk}}G</td>
+              </tr>
+              <tr>
+                <td style="background:#69D2E7">Space</td><td>{{avail_disk}}G</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+  <script>
+
+    var cpuChartData = {
+      labels : ["60","50","40","30","20","10","0s"],
+      datasets : [
+        {
+          fillColor : "rgba(255,220,220,0.5)",
+          strokeColor : "rgba(0,220,220,1)",
+          pointColor : "rgba(220,220,220,1)",
+          pointStrokeColor : "#fff",
+          data : {{cpu_list}}
+        },
+        {
+          fillColor : "rgba(255,255,255,0.0)",
+          strokeColor : "rgba(255,255,255,0)",
+          pointColor : "rgba(255,255,255,0)",
+          pointStrokeColor : "#fff",
+          data : [100]
+        }
+      ]
+
+    }
+    var memChartData = {
+      labels : ["60","50","40","30","20","10","0s"],
+      datasets : [
+        {
+          fillColor : "rgba(220,220,220,1.0)",
+          strokeColor : "rgba(0,0,0,1)",
+          pointColor : "rgba(220,220,220,1)",
+          pointStrokeColor : "#fff",
+          data : {{mem_list}}
+        },
+        {
+          fillColor : "rgba(255,255,255,0.0)",
+          strokeColor : "rgba(255,255,255,0)",
+          pointColor : "rgba(255,255,255,0)",
+          pointStrokeColor : "#fff",
+          data : [16]
+        }
+      ]
+    }
+    var netSendChartData = {
+      labels : ["60","50","40","30","20","10","0s"],
+      datasets : [
+        {
+          fillColor : "rgba(220,220,220,1.0)",
+          strokeColor : "rgba(0,0,0,1)",
+          pointColor : "rgba(220,220,220,1)",
+          pointStrokeColor : "#fff",
+          data : {{net_send_list}}
+        },
+        {
+          fillColor : "rgba(255,255,255,0.0)",
+          strokeColor : "rgba(255,255,255,0)",
+          pointColor : "rgba(255,255,255,0)",
+          pointStrokeColor : "#fff",
+          data : [500]
+        }
+      ]
+    }
+    var netRecvChartData = {
+      labels : ["60","50","40","30","20","10","0s"],
+      datasets : [
+        {
+          fillColor : "rgba(220,220,220,1.0)",
+          strokeColor : "rgba(0,0,0,1)",
+          pointColor : "rgba(220,220,220,1)",
+          pointStrokeColor : "#fff",
+          data : {{net_recv_list}}
+        },
+        {
+          fillColor : "rgba(255,255,255,0.0)",
+          strokeColor : "rgba(255,255,255,0)",
+          pointColor : "rgba(255,255,255,0)",
+          pointStrokeColor : "#fff",
+          data : [500]
+        }
+      ]
+    }
+
+
+    var pieData = [
+        {
+          value : {{used_disk}},
+          color : "#E0E4CC"
+        },
+        {
+          value : {{avail_disk}},
+          color : "#69D2E7"
+        }
+
+      ];
+  cpuoption = {
+      scaleShowLabels : true,
+      scaleLabel : "<%=value%>%"
+  };
+  memoption = {
+      scaleShowLabels : true,
+      scaleLabel : "<%=value%>%"
+  };
+  netoption = {
+      scaleShowLabels : true,
+      scaleLabel : "<%=value%>K/s"
+  };
+
+  var myCpuLine = new Chart(document.getElementById("cpu_chart").getContext("2d")).Line(cpuChartData, cpuoption);
+  var myMemLine = new Chart(document.getElementById("mem_chart").getContext("2d")).Line(memChartData,memoption);
+  var myNetSendLine = new Chart(document.getElementById("net_send_chart").getContext("2d")).Line(netSendChartData, netoption);
+  var myNetRecvLine = new Chart(document.getElementById("net_recv_chart").getContext("2d")).Line(netRecvChartData,netoption);
+  var myPie = new Chart(document.getElementById("disk_chart").getContext("2d")).Pie(pieData);
+
+
+  </script>
+  </body>
+</html>

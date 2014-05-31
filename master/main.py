@@ -1,9 +1,10 @@
 #! /usr/bin/env python
 
 #coding=utf-8
-import time, socket
+import time, socket, simplejson
 import xml.dom.minidom as xml
 import MySQLdb as db
+from mail import send_mail
 
 global g_conn
 
@@ -28,7 +29,7 @@ def main():
         # request slave server
         while True:
             poll(xml_slave_cluster)
-            time.sleep(1)
+            time.sleep(5)
     except KeyboardInterrupt, e:
         print "Exit! Bye~"
         g_conn.close
@@ -56,7 +57,7 @@ def poll(cluster):
                 response_data = s.recv(1024)
                 update_runtime_status([node_id, node_name, response_data])
                 save_history_status([node_id, node_name, response_data, get_time()])
-                on_recv_response(response_data)
+                on_recv_response(node_id, response_data)
                 print response_data
                 s.close
 
@@ -72,8 +73,18 @@ def get_time():
     time_stamp = time.strftime( time_format, struct_time)
     return time_stamp
 
-def on_recv_response(data):
-    pass
+def on_recv_response(svid, data):
+    stata_dict = simplejson.loads(data)
+    print "+++++++++"
+    mem_percent = float(stata_dict["mem_used"])
+    if mem_percent > 95:
+        mailto_list=["353047016@qq.com"]
+        mail_content = "NO."+str(svid)+" server warning, memeroy used over 95%,please check it out."
+        if send_mail(mailto_list,"Monitor Warning-No Reply",mail_content):
+            print "sent success!"
+        else:
+            print "sent fail"
+
 def update_runtime_status(values):
     global g_conn
     print values[0]
@@ -103,7 +114,7 @@ def update_runtime_status(values):
 
 def save_history_status(values):
     global g_conn
-    print type(values[0])
+    #print type(values[0])
     sql_insert_history = 'insert into History values(%s, %s, %s, %s)'
     cur = g_conn.cursor()
     cur.execute(sql_insert_history, values)

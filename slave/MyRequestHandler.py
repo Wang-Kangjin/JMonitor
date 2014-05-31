@@ -16,7 +16,7 @@ class MyRequestHandler(BaseRequestHandler):
         status_dict = {}
         status_dict["local_time"] = self.get_time()
         status_dict["cpu_percent"] = str(self.get_cpu_percent())
-        status_dict["mem_used"] = str(self.get_memory()) + '%'
+        status_dict["mem_used"] = str(self.get_memory())
         status_dict["send_speed"] = self.get_net_send_speed()
         status_dict["recv_speed"] = self.get_net_recv_speed()
         status_dict["total_capacity"] = self.get_total_capacity()
@@ -40,6 +40,14 @@ class MyRequestHandler(BaseRequestHandler):
                 return '%.2f %s' % (value, s)
         return '%.2f B' % (n)
 
+    def bytes2G(self, n):
+        res = float(n)/(1024*1024*1024)
+        return '%.2f' % res
+
+    def bytes2K(self, n):
+        res = float(n)/1024
+        return '%.2f' % res
+
     def get_cpu_percent(self):
         p = psutil.cpu_percent()
         return p
@@ -55,19 +63,19 @@ class MyRequestHandler(BaseRequestHandler):
         return time_stamp
 
     def get_net_send_speed(self):
-        send_speed = self.bytes2human(glb.network_send_speed)
-        return send_speed + '/s'
+        send_speed = self.bytes2K(glb.network_send_speed)
+        return send_speed
 
     def get_net_recv_speed(self):
-        recv_speed = self.bytes2human(glb.network_recv_speed)
-        return recv_speed + '/s'
+        recv_speed = self.bytes2K(glb.network_recv_speed)
+        return recv_speed
 
     def get_total_capacity(self):
         vfs=os.statvfs("/")
         capacity=vfs[statvfs.F_BLOCKS]*vfs[statvfs.F_BSIZE]
-        return self.bytes2human(capacity)
+        return self.bytes2G(capacity)
 
     def get_available_capacity(self):
         vfs=os.statvfs("/")
         available=vfs[statvfs.F_BAVAIL]*vfs[statvfs.F_BSIZE]
-        return self.bytes2human(available)
+        return self.bytes2G(available)
