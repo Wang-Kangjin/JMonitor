@@ -4,9 +4,11 @@
 import time, socket, simplejson
 import xml.dom.minidom as xml
 import MySQLdb as db
+from pymongo import MongoClient
 from mail import send_mail
 
 global g_conn
+global mdb
 
 def main():
 
@@ -40,6 +42,11 @@ def init(db_user, db_pwd, db_name):
     # init mysql connection
     #g_conn = db.connect(host='localhost',user='root',passwd='wkj',db='jmonitor',port=3306,charset='utf8')
     g_conn = db.connect(host='localhost',user=db_user,passwd=db_pwd,db=db_name,port=3306,charset='utf8')
+
+    #init MongoDB client
+    global mdb
+    client = MongoClient()
+    mdb = client.monitor
 
 def poll(cluster):
     for node in cluster.childNodes:
@@ -119,5 +126,10 @@ def save_history_status(values):
     cur = g_conn.cursor()
     cur.execute(sql_insert_history, values)
     g_conn.commit()
+
+    #save to mongodb
+    global mdb
+    print values
+    mdb.history.insert({"sv_id":values[0],'sv_name':values[1],'sv_status':values[2]})
 
 main()
